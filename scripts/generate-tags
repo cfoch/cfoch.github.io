@@ -7,7 +7,7 @@ TAGS_DIR = 'tags/'
 
 Dir.foreach(POSTS_DIR) do |post|
 
-  next if post == '.' or post == '..' or post == '.DS_Store'
+  next if post == '.' or post == '..' or post == '.DS_Store' or post == "tumblr"
   postYaml = YAML.load_file(POSTS_DIR + post)
   unless (postYaml['tags'] == nil)
     postYaml['tags'].each{|tag|
