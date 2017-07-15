@@ -1,0 +1,63 @@
+---
+layout: post
+title: 'Project Euler: Problema 39 (python)'
+date: '2013-05-16T18:08:00-05:00'
+tags: []
+tumblr_url: http://cfoch-dev.tumblr.com/post/50604704573/project-euler-problema-39-python
+---
+<p>El problema 39 de Project Euler dice lo siguiente:</p>
+<blockquote>
+<div class="problem_content">
+<p>If <em>p</em> is the perimeter of a right angle triangle with integral length sides, {<em>a</em>,<em>b</em>,<em>c</em>}, there are exactly three solutions for <em>p</em> = 120.</p>
+<p>{20,48,52}, {24,45,51}, {30,40,50}</p>
+<p>For which value of <em>p</em> <img alt="≤" height="12" src="http://projecteuler.net/images/symbol_le.gif" width="10"/> 1000, is the number of solutions maximised?</p>
+</div>
+
+</blockquote>
+<p><strong>Respuesta: 840</strong><br/><br/>La manera en que he pensado este problema es analizar todos los triángulos rectángulos posibles con lados enteros. El siguiente código genera una lista con todos los triángulos rectángulos de hipotenusa menor o igual a n.<br/>Si n == 20: triangulos_menores(20), entonces esta función devuelve<br/>[(5, 3, 4), (13, 5, 12), (10, 6, 8), (17, 8, 15), (15, 9, 12), (20, 12, 16)]<br/><br/></p>
+<pre>def triangulos_menores(n):
+    #lista de triangulos con hipotenusa 
+    #menor o igual a n
+    l = []
+    n += 1     
+    for i in range(1, n):
+        for j in range(i, n):
+            h = (i ** 2 + j ** 2) ** 0.5 #hipotenusa
+            if (h &lt;= n) and (h == round(h)):
+                t = (int(h), i, j) #triangulo
+                l.append(t)
+    return l
+</pre>
+<p><br/><br/>Sin embargo el problema no está en función a la hipotenusa, sino al perímetro máximo. Sea p_max el perímetro máximo que puede tener nuestro triángulo y supongamos que tenemos un triángulo de lados variables de catetos &lsquo;i&rsquo;, 'j&rsquo; e hipotenusa 'h&rsquo;, entonces se cumple: 'h &lt;= p_max - i - j&rsquo;. La función devuelve un diccionario donde los índices son los perímetros y sus valores son las veces que se repiten: {perimetro: veces-que-se-repite, &hellip;}. <strong>El código es el siguiente</strong>:<br/><br/></p>
+<pre>import time
+
+inicio = time.time()
+def perimetros(p_max):
+    dic = {}
+    p_max += 1     
+    for i in range(1, p_max):
+        for j in range(i, p_max):
+            h = (i ** 2 + j ** 2) ** 0.5 #hipotenusa
+            if (h &lt;= p_max - i -j) and (h == round(h)):
+                p = int(h + i + j)
+                if p in dic:
+                    dic[p] += 1
+                else:
+                    dic[p] = 1
+                        
+    return dic
+
+p_max = 1000
+d = perimetros(p_max)
+d_values = d.values()
+d_keys = d.keys()
+
+i = d_values.index(max(d_values))
+
+final = time.time()
+tiempo = final - inicio
+
+print "Respuesta: ", d_keys[i]
+print "Tiempo: ", tiempo
+</pre>
+<p>Recomiendo ver la solución en <br/><br/><a href="http://blog.dreamshire.com/2009/04/22/project-euler-problem-39-solution/">http://blog.dreamshire.com/2009/04/22/project-euler-problem-39-solution/</a></p>

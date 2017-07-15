@@ -1,0 +1,49 @@
+---
+layout: post
+title: 'GHC-API Tour: How can we know which modules does a data type belongs to?'
+date: '2015-04-11T00:28:06-05:00'
+tags: []
+tumblr_url: http://cfoch-dev.tumblr.com/post/116086920832/ghc-api-tour-how-can-we-know-which-modules-does-a
+---
+<p>I’ve been reading some documentation of the GHC-API because it would be what I would need in order to complete my project. I was thinking about my project and I felt into the following question: if we have a type, how can we know which modules does it belongs to?<br/>In GHCI we have a very interesting ‘command’ which is <br/></p><blockquote><p>:info &lt;the_function_or_type_you_want_information_about&gt;</p><div><br/></div></blockquote><p>So I was thinking that the answer to this question was in the code of this function. I had to look in the GHC source code. And I finally could solve this question. This is the <a href="http://dpaste.com/1WBH5NX">source code</a>: <br/><br/></p>
+<pre>
+
+import Control.Applicative
+import DynFlags
+import GHC
+import GHC.Paths
+import GhcMonad ( liftIO )
+import HsImpExp ( simpleImportDecl )
+
+--(+++) = liftA2 (++)
+
+preludeModuleName :: ModuleName
+preludeModuleName = GHC.mkModuleName "Prelude"
+
+implicitPreludeImport :: InteractiveImport
+implicitPreludeImport = IIDecl (simpleImportDecl preludeModuleName)
+
+main = defaultErrorHandler defaultFatalMessager defaultFlushOut $ do
+    runGhc (Just libdir) $ do
+        dflags &lt;- getSessionDynFlags
+        setSessionDynFlags $ dflags { hscTarget = HscInterpreted
+                                    , ghcLink   = LinkInMemory
+                                    }
+        setContext [implicitPreludeImport]
+
+        let typesStr = ["Bool", "Integer", "String", "Char", "Double"]
+
+
+        printNames typesStr
+    where
+      nameToStr name = moduleNameString $ moduleName $ nameModule name
+
+      printNames [] = liftIO $ return ()
+      printNames (t:ts) = do
+        names' &lt;- GHC.parseName t
+        liftIO $ mapM_ (putStrLn . (++) (t ++ " -&gt; ") . nameToStr) names'
+        printNames ts
+
+
+
+</pre>

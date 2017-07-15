@@ -1,0 +1,27 @@
+---
+layout: post
+title: Learning Pascal syntax (1)
+date: '2012-04-19T20:58:43-05:00'
+tags: []
+tumblr_url: http://cfoch-dev.tumblr.com/post/21410574421/learning-pascal-syntax-1
+---
+<pre class="prettyprint">Program Mate;
+
+function potencia_entera(base, exp:integer) : integer;
+	begin
+		if (exp &lt;&gt; 0) then
+			begin
+				exp := exp - 1;
+				potencia_entera := base * potencia_entera(base, exp);
+			end
+		else
+			begin
+				potencia_entera := 1;
+			end;		
+	end;
+
+begin
+	writeln(potencia_entera(2,10));
+end.
+
+</pre>

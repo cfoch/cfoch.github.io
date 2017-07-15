@@ -1,0 +1,34 @@
+---
+layout: post
+title: Analyzing stock market in Haskell
+date: '2015-03-27T09:59:38-05:00'
+tags:
+- haskell
+tumblr_url: http://cfoch-dev.tumblr.com/post/114754745097/analyzing-stock-market-in-haskell
+---
+<p>Haskell currently has two packages related to the stock market which are called &ldquo;Finance-Quote-Yahoo&rdquo; and &ldquo;yahoo-finance-conduit&rdquo;. Both hackages only extract raw data from the Yahoo Finance. This project pretends to be tool for developers who creates stock trading advice software.</p>
+<p>The information this module will give would be according historical prices.<strong> It is important to highlight that the stock market is unpredictable. Nobody, even Warren Buffet, knows what will happen the next month, the next 3 or 25 years.</strong></p>
+<p>Firstly, I will re-write the both hackages mentioned above in order to remove the Yahoo Finance dependency. Yahoo Finance will be optional. Secondly I will write utilities (functions) to get useful trading information. Some of these functions will be:</p>
+<p><strong>*Functions related to highest and lowest prices*</strong></p>
+<p><strong>getHighestStockDay</strong><br/>- Get the highest stock price given a range of dates.</p>
+<p><strong>getLowestStockDay</strong><br/>- Get the lowest stock price given a range of dates.</p>
+<p><strong>getLowestCloseStockDay</strong><br/>- Get the lowest stock price close given a range of dates.</p>
+<p><strong>getHighestCloseStockDay</strong><br/>- Get the highest stock price close given a range of dates.</p>
+<p>&hellip; and more similar functions indicating the highest or lower average price of the day, the open price&hellip;</p>
+<p><br/><strong>*Find supports and resistances</strong></p>
+<p><strong>findSupports</strong><br/>- List the possible supports of the stock prices given a range of dates</p>
+<p><strong>findResistances</strong><br/>- List the possible resistances of the stock prices given a range of dates</p>
+<p><strong>*Functions related to get information according the day of the week (Monday, Thursday&hellip;Friday)*</strong></p>
+<p><strong>getCloseAverageStockDay</strong><br/>- Know the average of the stock given a day of the week (Monday, Thursday&hellip;Friday)</p>
+<p><strong>getHighestCloseAverageDayWeek</strong><br/>- Know the day of the week (Monday, Thursday&hellip;Friday) in which the average of the price of the stocks of certain company was the highest.</p>
+<p><strong>dayToBuyAccordingIchimokuTendency<br/></strong>- Given a tendency (Bearish, Neutral or Bullish), know the best day of the month ot buy a stock. The results of this functions could be, of course, wrong. (This is stock market) But I will follow the Ichimoku Clouds study.</p>
+<p><br/>&hellip; and much more functions which can be kind of redundant but useful and could come to my mind on the way&hellip;<br/><br/></p>
+<p>Finally, this library will plot charts</p>
+<p><strong>*Allow to plot using GNU Plot (hackage)</strong><br/>- Linear chart<br/>- Candlestick chart (dayly, weekly&hellip;)<br/>- Draw the moving average<br/>- Ichimoku Clouds study<br/><br/><strong>Timeline</strong></p>
+<ul><li>Create the data types to storage data about prices independent if it is Google Finance or Yahoo Finance. Get data from Yahoo Finance API. Parser for CV files from Yahoo Finance and Google Finance. Create simple functions. <strong>(3 weeks) </strong></li>
+<li>Make Ichimoku clouds and moving average studies <strong>(5 weeks)</strong></li>
+<li>Get to plot the chart of the prices of the stock market <strong>(4 weeks)</strong><br/><br/>If time remains I will write more useful functions to extract important information from the historical prices or I will add more graphical studies.<br/><br/></li>
+</ul><p><strong>About me:</strong><br/>My name is Fabián Orccón. I am student at PUCP university. The first time I saw Haskell was when I met a friend in my first cycles of university who was doing a thesis in Haskell. However, I really got more into Haskell when I had a course where we have Haskell as part of the course. <br/><br/><strong>Motivation:<br/></strong>I am a humble investor in the stock and foreign exchange market. Because I am fascinated about computer programming, In my free times, I was writing (on my free times) a tool (in Haskell) to extract information from the historical prices. This Google Summer Of Code is an opportunity to go further and to get this tool more powerful.<br/><br/><strong>github:</strong></p>
+<p><strong><a href="https://github.com/cfoch/paul">https://github.com/cfoch/paul</a></strong></p>
+
+<p> </p>

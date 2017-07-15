@@ -1,0 +1,161 @@
+---
+layout: post
+title: Simulador de carreras tonto en Pascal
+date: '2012-05-06T19:52:00-05:00'
+tags: []
+tumblr_url: http://cfoch-dev.tumblr.com/post/22552916553/simulador-de-carreras-tonto-en-pascal
+---
+<pre class="prettyprint">program Carrera;
+
+function clima_funct(): String;
+	var aleatorio: Integer;
+	begin
+		randomize;
+		aleatorio := random(101);
+		if aleatorio in [0..25] then begin
+			clima_funct := 'Mojado';
+		end
+		else begin
+			clima_funct := 'Seco';
+		end;
+	end;
+
+function tiempo_mala_maniobra(p: Real): Integer;
+	var aleatorio: Integer;
+	begin
+		randomize;
+		if (p &gt; random())then begin
+			tiempo_mala_maniobra := 0
+		end
+		else begin
+			aleatorio := random(24) + 7;
+			tiempo_mala_maniobra := aleatorio;
+		end;
+	end;
+	
+function work_funct(p: Real): Boolean;
+	begin
+		randomize;
+		if (p &gt; random()) then begin
+			work_funct := False;
+		end
+		else begin
+			work_funct := True;
+		end;
+	end;
+var f_piloto, f_circuito, f_out: Text;
+	//
+	cant_pilotos: Integer;
+	h_pista_seca, h_pista_moj, prob_mala_man,
+		prob_falla_mec: Real;
+	vel_prom_rect, vel_prom_curv: Integer;
+	//
+	
+	//
+	vueltas, tipo_curva, rect_dist, curv_deg,
+		curv_radio: Integer;
+	//
+	
+	//
+	dist_total_recta: Integer;
+	dist_total_curva, dist_total: Real;
+	vel_prom: Real;
+	t_curva, t_recta: Real;
+	clima: String;
+	tiempo: Real;
+	i, j: Integer;
+	ganador: Integer;
+	tiempo_ant: Real;
+	work: Boolean;
+	//
+	
+begin
+
+	//
+	assign(f_piloto, 'piloto.txt');
+	assign(f_circuito, 'circuito.txt');
+	assign(f_out, 'resumen.txt');
+	reset(f_piloto);
+	reset(f_circuito);
+	rewrite(f_out);
+	//
+	
+	dist_total_curva := 0;
+	dist_total_recta := 0;
+	
+	while not eof(f_circuito) do begin
+		read(f_circuito, vueltas, tipo_curva);
+		while not eoln(f_circuito) do begin
+			if tipo_curva = 1 then begin
+				read(f_circuito, rect_dist);
+				dist_total_recta := dist_total_recta +
+									rect_dist;
+			end;
+			if tipo_curva = 2 then begin
+				read(f_circuito, curv_deg, curv_radio);
+				dist_total_curva := dist_total_curva +
+									curv_radio*(pi()*curv_deg/180);
+			end;
+			read(f_circuito, tipo_curva);
+		end;
+	end;
+	writeln('sali');
+	dist_total := dist_total_recta + dist_total_curva;
+	clima := clima_funct();
+	
+	writeln(f_out, 'Longitud de pista: ', dist_total:1:2);
+	writeln(f_out, 'Numero de vueltas: ', vueltas);
+	writeln(f_out, 'Condicion de pista: ', clima);
+	writeln(f_out, 'Piloto/Tiempo');
+
+	//
+	read(f_piloto, cant_pilotos);
+	//
+	ganador := 1;
+	for i:= 1 to cant_pilotos do begin
+		work := True;
+		read(f_piloto, h_pista_seca, h_pista_moj, 
+			vel_prom_rect, vel_prom_curv, 
+			prob_mala_man, prob_falla_mec);
+		t_recta := dist_total_recta/vel_prom_rect;
+		t_curva := dist_total_curva/vel_prom_curv;
+		vel_prom := dist_total/(t_recta + t_curva);
+		if clima = 'Mojado' then begin
+			vel_prom := vel_prom * h_pista_moj;
+		end;
+		if clima = 'Seco' then begin
+			vel_prom := vel_prom * h_pista_seca;
+		end;
+		tiempo := (dist_total/vel_prom)*vueltas;
+		j := 0;
+		while (j  1 then begin
+				if tiempo &lt; tiempo_ant then begin
+					ganador := i;
+				end;
+				tiempo_ant := tiempo; //¿Es la mejor manera?
+			end;
+		end
+		else begin
+			writeln(f_out, 'Piloto ', i, ': AFUERA');
+			ganador := 0;
+		end;
+	end;
+	writeln(f_out, 'El ganador fue el piloto ', ganador);
+
+	close(f_piloto);
+	close(f_circuito);
+	close(f_out);
+
+end.
+</pre>
+<p><strong>piloto.txt</strong></p>
+<pre>5
+1.1 0.95 235 170 0.05 0.001
+0.98 0.90 240 180 0.1 0.004
+1.11 0.98 225 190 0.08 0.005
+1.05 0.97 221 185 0.01 0.001
+0.99 1.1 220 200 0.005 0.003
+</pre>
+<p><strong>circuito.txt</strong></p>
+<pre>57 1 800 2 100 60 1 1100 2 150 230 1 1500 2 110 370
+</pre>

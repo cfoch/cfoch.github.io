@@ -1,0 +1,23 @@
+---
+layout: post
+title: 'Project Euler: Problema 1 (Haskell) ''o simplemente: Aprendiendo Haskell'''
+date: '2013-05-20T23:42:00-05:00'
+tags:
+- euler
+- projecteuler
+- project euler
+- haskell
+- python
+tumblr_url: http://cfoch-dev.tumblr.com/post/50964522215/project-euler-problema-1-haskell-o
+---
+<p>El problema 1 de Project Euler dice lo siguiente:</p>
+<blockquote>
+<div class="problem_content">
+<p>If we list all the natural numbers below 10 that are multiples of 3 or 5, we get 3, 5, 6 and 9. The sum of these multiples is 23.</p>
+<p>Find the sum of all the multiples of 3 or 5 below 1000.</p>
+</div>
+
+</blockquote>
+<p>Este problema es jodidamente fácil. Estoy aprendiendo Haskell y he querido empezar por este problema. Sale en una línea.<br/><br/></p>
+<pre> sum [x | x &lt;- [1..999], mod x 3 == 0 || mod x 5 == 0]</pre>
+<p>Si desean aprender Haskell les recomiendo este tutorial: <br/><a href="http://aprendehaskell.es/">http://aprendehaskell.es/</a></p>

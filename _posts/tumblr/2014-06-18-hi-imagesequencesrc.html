@@ -1,0 +1,21 @@
+---
+layout: post
+title: Hi, ImageSequenceSrc!
+date: '2014-06-18T22:37:12-05:00'
+tags:
+- pitivi
+- gstreamer
+tumblr_url: http://cfoch-dev.tumblr.com/post/89219451887/hi-imagesequencesrc
+---
+<p>Hello guys. I&rsquo;ve written an element in gst-plugins-bad which I called as GstImageSequenceSrc. It works very similar to GstMultiFileSrc, but there are some differences.</p>
+<p><strong>Differences with GstMultiFileSrc.</strong></p>
+<p>Handles a list of filenames instead of a printf pattern as GstMultiFileSrc does.<br/><strong>*</strong> Having a list of filenames is useful because you can set the filenames you want,<br/>in the order you want. For example, you can add more filenames or sort the list.<br/><strong>*</strong> There are two ways to create this list:<br/>    <strong>a)</strong> Setting a location propertie. This value could look like:</p>
+<ol><li><span>&rsquo;/some/folder/with/images/ or .&rsquo;</span></li>
+<li><span>&rsquo;/a/path/img.jpg,/other/path/img2.jpg&rsquo; or &lsquo;img1.png,img2.png&rsquo;</span></li>
+<li><span>&rsquo;/a/path/*.JPEG or *.png&rsquo;</span></li>
+</ol><p>    <strong>b)</strong> Setting the filename-list (GList) directly.<br/><br/><strong>*</strong> Creates an <em>&ldquo;imagesequence://&rdquo;</em> protocol which allows the playbin to play this element. It handles a 'fake&rsquo; uri but it is useful finally.<br/><br/><em>gst-launch-1.0 playbin uri=&ldquo;imagesequencesrc:///some/path/*.jpg?framerate=20/1&amp;loop=1&rdquo;</em><br/><br/><strong>*</strong> It &ldquo;detects&rdquo; the mimetype of the images. You only have to worry about the framerate.<br/><strong>*</strong> It calculates the duration.</p>
+<p><strong>Things to improve:</strong></p>
+<p><strong>*</strong> Seeking: it seeks to the wrong image sometimes (actually, after many seeks).<br/><strong>*</strong> The way duration is calculated.</p>
+<p><em>PD: stormer, the guy who hangs on #gstreamer, was telling me to support png *and* jpeg files (both at the same time) but I don&rsquo;t see a usecase.</em></p>
+<p>You can see the most-stable version of this element in <br/><a href="https://github.com/cfoch/gst-plugins-bad/tree/sequences/gst/sequences">https://github.com/cfoch/gst-plugins-bad/tree/sequences/gst/sequences</a></p>
+<p>The develop branch in (currently it is the same):<br/><a href="https://github.com/cfoch/gst-plugins-bad/tree/sequences-develop/gst/sequences">https://github.com/cfoch/gst-plugins-bad/tree/sequences-develop/gst/sequences</a></p>

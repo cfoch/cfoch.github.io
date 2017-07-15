@@ -1,0 +1,93 @@
+---
+layout: post
+title: Analyzing the ParseResult of haskell-src-extensions
+date: '2015-04-17T14:21:42-05:00'
+tags:
+- haskell haskell-src-extensions parse-result
+tumblr_url: http://cfoch-dev.tumblr.com/post/116657796367/analyzing-the-parseresult-of
+---
+<p style="margin-bottom: 0in; line-height: 100%">
+		The project I have proposed requires to analyze the source code in order to query the declared function matching certain conditions. Haskell-Src-Extensions has a parser in which we can get a data type which contains information about (the Module in) a Haskell (.hs) file. The porpose of this post is to analyze together the ParseResult of a Haskell (.hs) file. I have created two files that you could find <a href="https://github.com/cfoch/hskll/tree/master/haskell-src-ext/test_2">here</a>.</p>
+	<ul><li style="margin-bottom: 0in; line-height: 100%;">
+			<strong>Main.hs:</strong> the parser.</li>
+		<li style="margin-bottom: 0in; line-height: 100%;">
+			<strong>Tutorial.hs: </strong>the file we are going to analyze.</li>
+	</ul><p style="margin-bottom: 0in; line-height: 100%;">
+		We compile the program by doing</p>
+	
+	<pre>
+ghc -package ghc Main.hs</pre>
+	<p>
+		 </p>
+	<p style="margin-bottom: 0in; line-height: 100%;">
+		If we execute the program by doing</p>
+	
+	<pre>
+./Main.hs Tutorial.hs</pre>
+	<p style="margin-bottom: 0in; line-height: 100%">
+		The result will be the representation of a Module data type, which we can see in the following line:</p>
+	<pre>
+<strong>Module</strong> <span style="background-color:#afeeee;">(SrcLoc "Tutorial.hs" 1 1)</span><span style="background-color:#dda0dd;"> (ModuleName "Tutorial")</span> <span style="background-color:#00ff00;">[]</span> <span style="background-color:#ffd700;">Nothing</span> <span style="background-color:#ff8c00;">(Just [])</span> <span style="background-color:#ffa07a;">[]</span> <span style="background-color:#696969;">[TypeSig (SrcLoc "Tutorial.hs" 3 1) [Ident "fib"] (TyFun (TyCon (UnQual (Ident "Integer"))) (TyCon (UnQual (Ident "Integer")))),FunBind [Match (SrcLoc "Tutorial.hs" 4 1) (Ident "fib") [PLit Signless (Int 0)] Nothing (UnGuardedRhs (Lit (Int 0))) (BDecls []),Match (SrcLoc "Tutorial.hs" 5 1) (Ident "fib") [PLit Signless (Int 1)] Nothing (UnGuardedRhs (Lit (Int 1))) (BDecls []),Match (SrcLoc "Tutorial.hs" 6 1) (Ident "fib") [PVar (Ident "n")] Nothing (UnGuardedRhs (InfixApp (App (Var (UnQual (Ident "fib"))) (Paren (InfixApp (Var (UnQual (Ident "n"))) (QVarOp (UnQual (Symbol "-"))) (Lit (Int 1))))) (QVarOp (UnQual (Symbol "+"))) (App (Var (UnQual (Ident "fib"))) (Paren (InfixApp (Var (UnQual (Ident "n"))) (QVarOp (UnQual (Symbol "-"))) (Lit (Int 2))))))) (BDecls [])]]</span></pre>
+	<p style="margin-bottom: 0in; line-height: 100%">
+		If we look at the declaration of the Module data type, we can see that it is:</p>
+	<pre>
+<strong>Module</strong> <span style="background-color:#afeeee;">SrcLoc</span> <span style="background-color:#dda0dd;">ModuleName</span> <span style="background-color:#00ff00;">[ModulePragma]</span> <span style="background-color:#ffd700;">(Maybe WarningText)</span> <span style="background-color:#ff8c00;">(Maybe [ExportSpec])</span> <span style="background-color:#ffa07a;">[ImportDecl]</span> <span style="background-color:#696969;">[Decl]</span></pre>
+	<p style="margin-bottom: 0in; line-height: 100%">
+		The definition is colored, so you can difference easily between the parameters. The <span style="background-color:#00ff00;">[ModulePragma]</span>, the <span style="background-color:#ffd700;">MaybeWarningText</span>, the <span style="background-color:#ff8c00;">(Maybe [ExportSpec])</span> and <span style="background-color:#ffa07a;">[ImportDecl]</span> doesn&rsquo;t have relevant information. But in the <span style="background-color:#696969;">[Decl]</span> parameter we have many information. We will make a &ldquo;zoom&rdquo; here.</p>
+	<p style="margin-bottom: 0in; line-height: 100%; text-align: center;">
+		<br/>
+		&hellip;</p>
+	<p style="margin-bottom: 0in; line-height: 100%">
+		<br/><em>Note: Forget colors above. Now we use different colors.</em></p>
+	<pre>
+[<span style="background-color:#40e0d0;">TypeSig (SrcLoc "Tutorial.hs" 3 1) [Ident "fib"] (TyFun (TyCon (UnQual (Ident "Integer"))) (TyCon (UnQual (Ident "Integer"))))</span>,<span style="background-color:#dda0dd;">FunBind [Match (SrcLoc "Tutorial.hs" 4 1) (Ident "fib") [PLit Signless (Int 0)] Nothing (UnGuardedRhs (Lit (Int 0))) (BDecls [])</span>,<span style="background-color:#ffff00;">Match (SrcLoc "Tutorial.hs" 5 1) (Ident "fib") [PLit Signless (Int 1)] Nothing (UnGuardedRhs (Lit (Int 1))) (BDecls [])</span>,<span style="background-color:#ffa07a;">Match (SrcLoc "Tutorial.hs" 6 1) (Ident "fib") [PVar (Ident "n")] Nothing (UnGuardedRhs (InfixApp (App (Var (UnQual (Ident "fib"))) (Paren (InfixApp (Var (UnQual (Ident "n"))) (QVarOp (UnQual (Symbol "-"))) (Lit (Int 1))))) (QVarOp (UnQual (Symbol "+"))) (App (Var (UnQual (Ident "fib"))) (Paren (InfixApp (Var (UnQual (Ident "n"))) (QVarOp (UnQual (Symbol "-"))) (Lit (Int 2))))))) (BDecls [])]</span>]</pre>
+	<p style="margin-bottom: 0in; line-height: 100%">
+		This element is a list of declarations (<strong>[Decl]</strong>). Each element of this list, could represent the declaration of a type, a data type or a signature or a function, etc. In this case, the following declarations matches with:</p>
+	<pre>
+<span style="background-color:#40e0d0;">fib :: Integer -&gt; Integer</span>
+<span style="background-color:#ee82ee;">fib 0 = 0</span>
+<span style="background-color:#ffff00;">fib 1 = 1</span>
+<span style="background-color:#ffa07a;">fib n = fib (n - 1) + fib (n - 2)</span></pre>
+	<p>
+		<strong>1. The first element (<span style="background-color:#40e0d0;">-</span>):</strong><br/>
+		It represents a signature. TypeSig &lsquo;contents&rsquo; the following elements:</p>
+	<ul><li>
+			<em><strong>SrcLoc: </strong></em>the filepath of the source file.</li>
+		<li>
+			<em><strong>[Ident &hellip;]:</strong></em> the name of the signature or function</li>
+		<li>
+			<em><strong>TyFun:</strong></em> says that this signature <strong>returns an Integer </strong>data type and <strong>receives an Integer</strong> data type, <strong>in this order.</strong></li>
+	</ul><p>
+		<strong>2. The second element of the list (<span style="background-color:#ee82ee;">-</span><span style="background-color:#ffff00;">-</span><span style="background-color:#ffa07a;">-</span>):</strong><br/>
+		It represents the declaration of a function, in this case &ldquo;fib&rdquo;. FunBind contents a list of Match which contents the following values:<br/><strong>2.1 First subelement</strong>, it makes reference to &ldquo;fib 0 = 0&rdquo;.</p>
+	<ul><li>
+			<em><strong>SrcLoc: </strong></em>the filepath of the source file.</li>
+		<li>
+			<em><strong>Ident &hellip;:</strong></em> the name of the function</li>
+		<li>
+			<em><strong>[PLit Signless (Int 0)]</strong></em>: the pattern, in this case is literal (constant) and it is 0.</li>
+		<li>
+			<em><strong>Nothing</strong></em></li>
+		<li>
+			<em><strong>(UnGuardedRhs (Lit (Int 1)))</strong>: </em>this is the content in the body of the function, in this case it is only 1.</li>
+		<li>
+			<em><strong>BDecls []: </strong></em>these are the declarations inside the function, for example, in where clauses (or in let clauses, too?)</li>
+	</ul><p>
+		<strong>2.2 Second subelement</strong>, it is pretty similar to 2.1, but parsing &ldquo;fib 1 = 1&rdquo;</p>
+	<p>
+		<strong>2.1 Third subelement</strong>, it makes reference to &ldquo;fib 0 = 0&rdquo;.</p>
+	<ul><li>
+			<em><strong>SrcLoc: </strong></em>the filepath of the source file.</li>
+		<li>
+			<em><strong>Ident &hellip;:</strong></em> the name of the function</li>
+		<li>
+			<em><strong>[PVar (Ident &ldquo;n&rdquo;)]:</strong></em> in this case the pattern is a variable and it is n.</li>
+		<li>
+			<em><strong>Nothing</strong></em></li>
+		<li>
+			<em><strong>(UnGuardedRhs (InfixApp (App (Var (UnQual (Ident &ldquo;fib&rdquo;))) (Paren (InfixApp (Var (UnQual (Ident &ldquo;n&rdquo;))) (QVarOp (UnQual (Symbol &ldquo;-&rdquo;))) (Lit (Int 1))))) (QVarOp (UnQual (Symbol &ldquo;+&rdquo;))) (App (Var (UnQual (Ident &ldquo;fib&rdquo;))) (Paren (InfixApp (Var (UnQual (Ident &ldquo;n&rdquo;))) (QVarOp (UnQual (Symbol &ldquo;-&rdquo;))) (Lit (Int 2))))))):</strong></em>
+		here we can see that it is parsing the part of &ldquo;fib (n - 1) + fib (n - 2)&rdquo;</li>
+
+		<li>
+			<em><strong>BDecls []: </strong></em>these are the declarations inside the function, for example, in where clauses.</li>
+	</ul>

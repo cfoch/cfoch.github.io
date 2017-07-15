@@ -1,0 +1,59 @@
+---
+layout: post
+title: 'Project Euler: Problema 40 (python). 8e-05 segundos'
+date: '2013-05-19T15:52:00-05:00'
+tags:
+- '40'
+- problem 40
+- problem40
+- projecteuler
+- euler
+- python
+tumblr_url: http://cfoch-dev.tumblr.com/post/50844716034/project-euler-problema-40-python-8e-05
+---
+<p>El problema 40 de Project Euler dice lo siguiente:</p>
+<blockquote>
+<div class="problem_content">
+<p>An irrational decimal fraction is created by concatenating the positive integers:</p>
+<p>0.12345678910<span>1</span>112131415161718192021&hellip;</p>
+<p>It can be seen that the 12<sup>th</sup> digit of the fractional part is 1.</p>
+<p>If <em>d</em><sub><em>n</em></sub> represents the <em>n</em><sup>th</sup> digit of the fractional part, find the value of the following expression.</p>
+<p><em>d</em><sub>1</sub><img alt="×" height="9" src="http://projecteuler.net/images/symbol_times.gif" width="9"/><em>d</em><sub>10</sub><img alt="×" height="9" src="http://projecteuler.net/images/symbol_times.gif" width="9"/><em>d</em><sub>100</sub><img alt="×" height="9" src="http://projecteuler.net/images/symbol_times.gif" width="9"/><em>d</em><sub>1000</sub><img alt="×" height="9" src="http://projecteuler.net/images/symbol_times.gif" width="9"/><em>d</em><sub>10000</sub><img alt="×" height="9" src="http://projecteuler.net/images/symbol_times.gif" width="9"/><em>d</em><sub>100000</sub><img alt="×" height="9" src="http://projecteuler.net/images/symbol_times.gif" width="9"/><em>d</em><sub>1000000</sub></p>
+</div>
+</blockquote>
+<p><strong>Respuesta: 210</strong></p>
+<p>El problema trata de un número cuya parte decimal viene dada por la concatenación de los números (1, 2, 3, 4, 5, 6, &hellip;). Ahora bien, la primera idea que a uno se le viene a la mente es concatenar todos los números como si fuera <em>strings</em>, s = &lsquo;0&rsquo; + '1&rsquo; + '2&rsquo; + '3&rsquo; + '4&rsquo; + '5&rsquo; + &hellip; hasta que la longitud de s, len(s), dé como resultado un número igual a 1000000. Luego simplemente multiplicamos &ldquo;int(s[1]) * int(s[10]) * &hellip; int(s[1000000])&rdquo; y eso sería la respuesta. Así es como lo hacen acá</p>
+<p><a href="http://alphacentauri32.wordpress.com/2011/05/04/project-euler-problem-40-solved-with-python/">http://alphacentauri32.wordpress.com/2011/05/04/project-euler-problem-40-solved-with-python/</a></p>
+<p>Ello toma al rededor de 0.17 segundos en mi computadora. Sin embargo, me pregunté si había una manera más óptima de resolverlo. Entonces logré dar con una solución que es aproximadamente 1276 veces más rápido.<strong><br/></strong></p>
+<p><img alt="image" src="http://68.media.tumblr.com/edf3bb31ec0caffecc7cb8fb88ddffcd/tumblr_inline_mn28rjODQM1qz4rgp.png"/></p>
+<p>Sea 'dig&rsquo; el dígito 'n&rsquo;-ésimo de la parte decimal del número 0.12345678910111213&hellip; Supongamos que <strong>queremos encontrar el dígito en la posición 2798</strong>. Según la imagen, nosotros sabemos que este  corresponde a un número de 4 cifras, el cual es 1002. Sabemos también que el mayor número de (4 - 1) cifras se sitúa en la posición 2789. Si restamos 2798 - 2789 obtenemos<strong> 9 dígitos restantes</strong> por contar, los cuáles se encuentran definitivamente en los números de 4 cifras. Finalmente, solo <strong>tenemos que contar 9 dígitos desde el primer número de 4 cifras, 1000</strong>. O lo que es lo mismo, hacer la división entera del número de dígitos resasntes entre el número de cifras (9 // 4 == 2) y sumarle 1, lo que da 3. Entonces, dígito se ubica en un número que es igual a 1000 + ( 3 - 1).<br/><br/>Obviamente, sin la imagen dada, nosotros no sabemos el número de cifras (n_cif) ni la posición que ocupa el dígito en el máximo número de (n_cif - 1). Todo esto lo hará el programa por nosotros. A diferencia de la solución del enlace, las iteraciones son mínimas. <strong>Lo siguiente es el código:</strong> <br/><br/><br/></p>
+
+<p></p>
+<pre>def dig_enesimo(n):
+    n_cif = 0 #n corresponde a un numero de n_cif cifras
+    suma = 0
+    while suma &lt; n:
+        n_cif += 1
+        digitos = 9 * n_cif * 10 ** (n_cif - 1) #{1cif-&gt;9 dig;2cif-&gt;180dig;3dig-&gt;2700dig...}
+        suma += digitos
+    suma = suma - digitos
+
+    n_dig = n - suma #digitos restantes en un numero de n_cif cifras
+    numero = n_dig // n_cif #contando de n_dig en n_dig
+    pos_num = n_dig % n_cif #digitos sobrantes
+    if pos_num != 0: numero += 1
+    else: pos_num = n_cif
+    pos_num = pos_num - 1 #dado un numero 'numero', pos_num es el digito en la posicion pos_num
+
+    numero = 10 ** (n_cif - 1) + numero - 1
+    dig = int(str(numero)[pos_num])
+    
+    return dig
+
+
+result = 1
+for i in [1, 10, 100, 1000, 10000, 100000, 1000000]:
+    result *= dig_enesimo(i)
+
+print result
+</pre>

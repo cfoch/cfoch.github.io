@@ -1,0 +1,33 @@
+---
+layout: post
+title: A stupid pygtk test
+date: '2012-04-09T12:57:04-05:00'
+tags: []
+tumblr_url: http://cfoch-dev.tumblr.com/post/20784772280/a-stupid-pygtk-test
+---
+<p>I wanted to do dinamic entries. I did it</p>
+<p><img src="http://68.media.tumblr.com/tumblr_m281qukAwP1r9iku9.png"/></p>
+<pre class="prettyprint">import gtk
+
+class Agregar:
+    def __init__(self):
+        window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        window.connect("destroy", gtk.main_quit, "WM destroy")
+        window.set_title("Agregar")
+        window.set_default_size(500,300)
+        self.vbox = gtk.VBox()
+        self.entry_l = []
+        button_add = gtk.Button("+")
+        button_add.connect("clicked", self.add_entry_cb)
+        window.add(self.vbox)
+        self.vbox.add(button_add)
+        window.show_all()
+
+    def add_entry_cb(self, widget, data=None):
+        self.entry_l.append(gtk.Entry())
+        self.vbox.add(self.entry_l[len(self.entry_l)-1])
+        self.entry_l[len(self.entry_l)-1].show()
+
+Agregar()
+gtk.main()
+</pre>

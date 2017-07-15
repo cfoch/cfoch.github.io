@@ -1,0 +1,61 @@
+---
+layout: post
+title: Primera experiencia en C con GLIB. Problema 3 (Project Euler)
+date: '2012-07-29T03:15:00-05:00'
+tags: []
+tumblr_url: http://cfoch-dev.tumblr.com/post/28253092259/primera-experiencia-en-c-con-glib-problema-3
+---
+<p>Si bien ya he probado GLib anteriormente, creo que lo hice casi a ciedas y muy apresuradamente: empezando con él en un proyecto real. Luego de unos meses, he decidido hacer experimentos con problemas que solía programar en Python de Project Euler. No sé si la solución que mostraré a continuación sea la mejor, pero más que nada quiero mostrar cómo usé GLib.</p>
+<p>La solución (<strong>6857</strong>):</p>
+<pre>/*
+ * PROBLEMA 3  (HECHO)
+ * The prime factors of 13195 are 5, 7, 13 and 29.
+ * What is the largest prime factor of the number 600851475143 ?
+*/
+
+#include &lt;stdio.h&gt;
+#include &lt;glib.h&gt;
+
+gboolean primo (gint64 numero) {
+	
+	gint64 j;
+	gboolean is_primo;
+	
+	if (numero != 2) {
+		is_primo = TRUE;
+		j = 2;
+		while ((j &lt; numero) &amp;&amp; (is_primo)) {
+			if (numero % j == 0) {
+				is_primo = TRUE;
+			}
+			j++;
+		}
+	}
+	else {
+		is_primo = TRUE;
+	}
+	return is_primo;	
+	
+}
+
+void main(void) {
+	gboolean is_primo, is_factor;
+	gint64 numero, i, mayor;
+	i = 2;
+	numero = 600851475143;
+	mayor = i;
+	while (i  2) {
+					if (i &gt; mayor) {
+						mayor = i;
+					}
+				}
+			}
+		}
+
+		i++;
+	}
+	printf("%llu\n", mayor);
+
+}
+
+</pre>

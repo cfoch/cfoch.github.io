@@ -1,0 +1,74 @@
+---
+layout: post
+title: "¿how to save/load metadata in PiTiVi? (non-recommended)"
+date: '2012-04-18T16:13:19-05:00'
+tags: []
+tumblr_url: http://cfoch-dev.tumblr.com/post/21337739339/how-to-saveload-metadata-in-pitivi
+---
+<pre class="prettyprint">typedef struct
+{
+        gchar *key;
+        gchar *value;
+} ProjectSettingsDic;
+
+void ges_pitivi_formatter_set_metadata (GESPitiviFormatter * formatter, const gchar * uri, gchar * author, gchar * name, gchar * year)
+{
+  xmlNodePtr nodo, metadata;
+  xmlDocPtr doc = NULL;
+
+  doc = xmlParseFile(uri);
+  nodo = xmlDocGetRootElement(doc);
+  metadata = xmlNewChild(nodo, NULL, BAD_CAST "metadata", NULL);
+  xmlSetProp(metadata,BAD_CAST "author",BAD_CAST author);
+  xmlSetProp(metadata,BAD_CAST "name",BAD_CAST name);
+  xmlSetProp(metadata,BAD_CAST "year",BAD_CAST year);
+  xmlSaveFile(uri, doc);
+
+}
+
+GHashTable * ges_pitivi_formatter_get_metadata (GESPitiviFormatter * formatter, const gchar * uri) {
+
+  xmlDocPtr doc;
+  xmlNodePtr root;
+  xmlNodePtr node;
+
+  GHashTable *hashTable;
+  ProjectSettingsDic *author;
+  ProjectSettingsDic *name;
+  ProjectSettingsDic *year;
+  ProjectSettingsDic *recalledObject;
+
+  doc = xmlParseFile (uri);
+  root = xmlDocGetRootElement (doc);
+  node = root-&gt;xmlChildrenNode;
+  
+  while (( node != NULL) &amp;&amp; (g_strcmp0((gchar *)node-&gt;name, "metadata") != 0)) {
+    node = node-&gt;next;
+  }
+
+  hashTable = g_hash_table_new(g_str_hash, g_str_equal);
+
+  // Create author
+  author = g_new0(ProjectSettingsDic, 1);
+  author-&gt;key = g_strdup("author");
+  author-&gt;value = g_strdup((char *)xmlGetProp(node, BAD_CAST "author"));
+
+  g_hash_table_insert(hashTable, author, author);
+
+  // Create name
+  name = g_new0(ProjectSettingsDic, 1);
+  name-&gt;key = g_strdup("name");
+  name-&gt;value = g_strdup((char *)xmlGetProp(node, BAD_CAST "name"));
+
+  g_hash_table_insert(hashTable, name, name);
+
+  // Create year
+  year = g_new0(ProjectSettingsDic, 1);
+  year-&gt;key = g_strdup("year");
+  year-&gt;value = g_strdup((char *)xmlGetProp(node, BAD_CAST "year"));
+
+  g_hash_table_insert(hashTable, year, year);
+
+  return hashTable;
+}
+</pre>

@@ -1,0 +1,123 @@
+---
+layout: post
+title: How to play a video using GES?
+date: '2014-04-13T14:03:00-05:00'
+tags:
+- ges
+- gstreamer-editing-services
+- gstreamer editing services
+- gstreamer
+- pitivi
+tumblr_url: http://cfoch-dev.tumblr.com/post/82600727362/how-to-play-a-video-using-ges
+---
+<p>Hello. I want to show you an example of a command-line video player using GES. This program is very simple and my purpose is you learn the basis. I paste the enterily code here if you just want to read the code.</p>
+<pre class="prettyprint linenums">from gi.repository import Gtk
+from gi.repository import GES
+from gi.repository import Gst
+from gi.repository import GObject
+
+import signal
+
+video_path = "/home/cfoch/Videos/samples/big_buck_bunny_1080p_stereo.ogg"
+
+def handle_sigint(sig, frame):
+    print "Bye!"
+    Gtk.main_quit()
+
+def busMessageCb(unused_bus, message):
+    if message.type == Gst.MessageType.EOS:
+        print "EOS: The End"
+        Gtk.main_quit()
+
+def duration_querier(pipeline):
+    print pipeline.query_position(Gst.Format.TIME)
+    return True
+
+if __name__ == "__main__":
+    GObject.threads_init()
+    Gst.init(None)
+    GES.init()
+
+    video_uri = "file://" + video_path
+
+    timeline = GES.Timeline.new_audio_video()
+    layer = timeline.append_layer()
+
+    asset = GES.UriClipAsset.request_sync(video_uri)
+    clip = layer.add_asset(asset, 0, 0, asset.get_duration(), GES.TrackType.UNKNOWN)
+
+    timeline.commit()
+
+    pipeline = GES.Pipeline()
+    pipeline.set_timeline(timeline)
+
+    pipeline.set_state(Gst.State.PLAYING)
+
+    bus = pipeline.get_bus()
+    bus.add_signal_watch()
+    bus.connect("message", busMessageCb)
+    GObject.timeout_add(300, duration_querier, pipeline)
+
+    signal.signal(signal.SIGINT, handle_sigint)
+
+    Gtk.main()
+</pre>
+<p>We&rsquo;re going to start checking these lines. <br/><br/></p>
+<pre class="prettyprint">    Gst.init(None)
+    GES.init()
+</pre>
+<p>We always need to use these lines to initialize GES. And you have to follow this order: initialize Gst before GES. If you change the order of these lines you program won&rsquo;t work.</p>
+<p>The next important line is</p>
+<pre class="prettyprint">    timeline = GES.Timeline.new_audio_video()
+</pre>
+<p>With this line we create a Timeline. I understand the timeline as the general container. It will contain all the elements necessary to play the (edited) video or audio we want. A timeline contains GESVideoTracks and/or GESAudioTracks.</p>
+<p>For example, if we want to play a video (with sound), our Timeline will contain both, a GESVideoTrack and a GESAudioTrack. If we want to play our favorite song, the timeline will contain only a GESAudioTrack.</p>
+<p>In this case, this line is creating a GESTimeline adding to it a GESVideoTrack and a GESAudioTrack. It is a shortcut to it:</p>
+<pre class="prettyprint">    videotrack = GES.VideoTrack.new()
+    audiotrack = GES.AudioTrack.new()
+    timeline = GES.Timeline.new()
+    timeline.add_track(videotrack)
+    timeline.add_track(audiotrack)
+</pre>
+<p>The Timeline not only contains tracks, but also it contains many GESLayer. Our program will contain an only one GESLayer. But a Timeline is a stack of layers. The most-top layer will have the major priority. In the default case, the priority is given by 0. But&hellip; why do we need a GESLayer? Here we&rsquo;ll add our clips, our effects, transitions. So, a GESLayer is another container. We not only create a GESLayer with this following line, but also we append the created layer to our timeline:</p>
+<pre class="prettyprint">    layer = timeline.append_layer()
+</pre>
+<p>What it is a kind of confusing to me is the GESAsset. I found them as an abstract idea of information of the video or audio file for example we will use. However, a GESAsset is not only limited to audio and video. It can have information about an effect or about a GESVideoTrack/GESAudioTrack.</p>
+<p>In this case we&rsquo;ll take advantage of the method request_sync GESUriClipAsset which allow us to create a GESAsset from a real file located in our computer, for example from a &lsquo;video.ogv&rsquo;. This method gets information like the duration of the video.</p>
+<pre class="prettyprint">    asset = GES.UriClipAsset.request_sync(video_uri)
+</pre>
+<p>The following line will generate the clip from the asset and add it to the layer we&rsquo;ve created before.</p>
+<pre class="prettyprint">    clip = layer.add_asset(asset, 0, 0, asset.get_duration(), GES.TrackType.UNKNOWN)
+</pre>
+<p>And To apply our changes&hellip;</p>
+<pre class="prettyprint">    timeline.commit()
+</pre>
+<p>To be able to display our video on the screen we need the GESPipeline. The GESPipeline allow us to play or render the result of our work, the result of our timeline. So a pipeline needs to be linked to a timeline.</p>
+<pre class="prettyprint">    pipeline = GES.Pipeline()
+    pipeline.set_timeline(timeline)
+</pre>
+<p>By default, the state of the pipeline is NULL. However, we can change this state to PLAYING or RENDER. When its state is in PLAYING the pipeline will display the result in the screen. If the state is RENDER it will 'export&rsquo; the result of our work in an out_file.ogv video, for example. We will set the state or mode of the pipeline in PLAYING because we want only to play the video.</p>
+<pre class="prettyprint">    pipeline.set_state(Gst.State.PLAYING)
+</pre>
+<p>If we remove lines bewtween 43 and 48 lines, and we execute the program, we can see the video playing. But these lines are necessary to handle when to stop the program. The program is an active process until something stop it. If we don&rsquo;t stop it, when our video has finished, it will be still executing. We don&rsquo;t want. We would like to stop/close/finish our program when. Ok&hellip; but&hellip; what do we have to stop? We have to stop the loop. What loop?</p>
+<pre class="prettyprint">    Gtk.main()
+</pre>
+<p>Every pipeline contains a GstBUS by default. A GstBUS is a system which is watching out to some mesages; this messages could be for example: the EOS of the video or another messages. See <a href="http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gstreamer-GstMessage.html#GstMessageType">http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gstreamer-GstMessage.html#GstMessageType</a>. We need to add a message handler to the bus of our pipeline using gst_bus_add_watch().</p>
+<pre class="prettyprint">    bus.add_signal_watch()
+</pre>
+<p>If you want to know more about the GstBUS, by the way. Look at this link: <a href="http://gstreamer.freedesktop.org/data/doc/gstreamer/head/manual/html/chapter-bus.html">http://gstreamer.freedesktop.org/data/doc/gstreamer/head/manual/html/chapter-bus.html</a></p>
+<p>We&rsquo;ve already added the message handler, but now we need to add the function we&rsquo;re going to use to handle the message. This function is busMessageCb. 'Cb&rsquo; from Callback. We connect the bus with this function with the following line.</p>
+<pre class="prettyprint">    bus.connect("message", busMessageCb)
+</pre>
+<p>The function busMessageCb is created by the developer. The target of this function is to stop the loop create by Gtk.main() when the playing of the video has finished.</p>
+<pre class="prettyprint">def busMessageCb(unused_bus, message):
+    if message.type == Gst.MessageType.EOS:
+        print "EOS: The End"
+        Gtk.main_quit()
+</pre>
+<p>We&rsquo;re finishing&hellip; this following line is just going to tell us what nanosecond of the video is the program playing each 300 miliseconds. Each 300 miliseconds our program will execute the duration_querier function which prints on the console the time of the video in a certain moment in nanoseconds.</p>
+<pre class="prettyprint">    bus.connect("message", busMessageCb)
+</pre>
+<p>Finally, as an extra, I want this program being able to get closed when the user press &ldquo;Ctrl+C&rdquo;. The line below allow it. We&rsquo;re taking advantage of the signal python library. And the program knows when &ldquo;Ctrl+c&rdquo; keys have been pressed because of the signal.SIGINT parameter. When these keys are pressed it calls to the function handle_sigint(sig, frame) which says <strong>&ldquo;Bye!&rdquo;</strong> and stop the loop.</p>
+<pre class="prettyprint">    signal.signal(signal.SIGINT, handle_sigint)
+</pre>

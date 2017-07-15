@@ -1,0 +1,86 @@
+---
+layout: post
+title: Post a picture from your webcam each N seconds on Facebook. (Gstreamer)
+date: '2016-04-15T21:34:27-05:00'
+tags: []
+tumblr_url: http://cfoch-dev.tumblr.com/post/142872604722/post-a-picture-from-your-webcam-each-n-seconds-on
+---
+<pre>
+import sys
+import signal
+import codecs
+import facebook
+from gi.repository import GObject
+from gi.repository import Gst
+from gi.repository import Gtk
+
+Gst.init(None)
+
+class Demo:
+    def __init__(self, access_token):
+        self.graph = facebook.GraphAPI(access_token=access_token)
+        self.fb_message = "My name be pseudofoch. You will never steal this"\
+            "laptop. Because if you do, I will find you and I will kill you."
+        
+
+        self.pipeline = Gst.Pipeline("pipeline")
+        self.source = Gst.ElementFactory.make("autovideosrc", "src")
+        self.videorate = Gst.ElementFactory.make("videorate", "videorate")
+        self.capsfilter = Gst.ElementFactory.make("capsfilter", "filter")
+        self.encoder = Gst.ElementFactory.make("jpegenc", "encoder")
+        self.sink = Gst.ElementFactory.make("multifilesink", "sink")
+
+
+        self.sink.set_property("location", "img/%d.jpg")
+        self.sink.set_property("post-messages", True)
+        caps = Gst.Caps.from_string('video/x-raw,framerate=1/10')
+        self.capsfilter.set_property("caps", caps)
+
+
+        self.pipeline.add(self.source)
+        self.pipeline.add(self.capsfilter)
+        self.pipeline.add(self.videorate)
+        self.pipeline.add(self.encoder)
+        self.pipeline.add(self.sink)
+
+        self.source.link(self.videorate)
+        self.videorate.link(self.capsfilter)
+        self.capsfilter.link(self.encoder)
+        self.encoder.link(self.sink)
+
+        self.i = 0
+
+        bus = self.pipeline.get_bus()
+        bus.add_signal_watch()
+        bus.connect("message", self._bus_message_cb)
+
+        self.pipeline.set_state(Gst.State.PLAYING)
+
+        signal.signal(signal.SIGINT, self._signal_handler)
+        GObject.timeout_add(300, self._duration_querier, self.pipeline)
+
+    def _bus_message_cb(self, unused_bus, message):
+        if message.type == Gst.MessageType.ELEMENT:
+            st = message.get_structure()
+            filename = st.get_value("filename")
+            print(filename)
+            self.graph.put_photo(image=open("img/%d.jpg" % self.i, 'rb'),
+                message=self.fb_message)
+            self.i += 1
+            
+        elif message.type == Gst.MessageType.EOS:
+            print("EOS: The End")
+            Gtk.main_quit()
+ 
+
+    def _signal_handler(self, sig, frame):
+        Gtk.main_quit()
+
+    def _duration_querier(self, pipeline):
+        position = pipeline.query_position(Gst.Format.TIME)
+        print(position)
+        return True
+access_token = "your_token"
+Demo(access_token)
+Gtk.main()
+</pre>

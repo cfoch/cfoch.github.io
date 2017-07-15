@@ -1,0 +1,9 @@
+---
+layout: post
+title: Funny stickers in Cheese
+date: '2016-03-24T11:21:01-05:00'
+tags:
+- cheese gstreamer
+tumblr_url: http://cfoch-dev.tumblr.com/post/141606328332/funny-stickers-in-cheese
+---
+<figure class="tmblr-full" data-orig-height="755" data-orig-width="1356"><img data-orig-height="755" data-orig-width="1356" src="http://68.media.tumblr.com/1d29bc73077e1df1862911a8d8328c37/tumblr_inline_o4jtryUjwU1r9iku9_540.png"/></figure><p><br/></p><p>Hi! I was talking with ‘yulys’ the in the Hack Camp, and one idea came to my mind. Many webcam programs allow users to stick figures on the image. So, why not to do the same in Cheese? <br/></p><p>The first idea I had to get this effect, was to use gstfacedetect to create a new filter or to the task upstream. Luckyly there is a filter called gstfaceoverlay, but it has not been ported to Gstreamer 1.x, so I have to partially ported it (I just need to check certain part that ‘Mathieu_Du’ told me to do). <br/></p><p>The idea is to have a more solid user interface with more features beyond masks: stickers, frames, text. For the while, track my <a href="https://github.com/cfoch/cheese">branch </a>and watch my video :)</p><figure data-url="https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DmY9RvGTmhFg" data-orig-height="304" data-orig-width="540" data-provider="youtube" class="tmblr-embed tmblr-full"><iframe id="youtube_iframe" src="https://www.youtube.com/embed/mY9RvGTmhFg?feature=oembed&amp;enablejsapi=1&amp;origin=https://safe.txmblr.com&amp;wmode=opaque" allowfullscreen="" frameborder="0" height="304" width="540"></iframe></figure>

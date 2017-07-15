@@ -1,0 +1,13 @@
+---
+layout: post
+title: GLib en C usando Geany
+date: '2012-07-29T03:07:29-05:00'
+tags: []
+tumblr_url: http://cfoch-dev.tumblr.com/post/28252789795/glib-en-c-usando-geany
+---
+<p>Quiero ir rápido con este post. Estoy volviendo a trabajar con C, así que como IDE estoy usando Geany. Como estoy usando la librería &ldquo;GLib&rdquo; de GNOME, he tenido que configurar los comandos para construir mi programa..<br/><br/>Primero voy a &ldquo;Construir&rdquo; &ndash;&gt; &ldquo;Establecer comandos de configuración&rdquo;</p>
+<p>Allí agrego en el comando de Construcción lo siguiente:</p>
+<pre>`pkg-config --cflags --libs glib-2.0`</pre>
+<p>Queda algo así:</p>
+<pre>gcc -Wall -o "%e" "%f" `pkg-config --cflags --libs glib-2.0`</pre>
+<p>Finalmente, podemos construir nuestros programas en C usando GLib sin problemas.</p>

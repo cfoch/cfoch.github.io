@@ -1,0 +1,78 @@
+---
+layout: post
+title: its a test i did using pygst on february now i
+date: '2012-04-07T21:33:33-05:00'
+tags: []
+tumblr_url: http://cfoch-dev.tumblr.com/post/20686199358/its-a-test-i-did-using-pygst-on-february-now-i
+---
+<img src="/tumblr_files/tumblr_m250bxYtw81rt6qe9o1_1280.png"/><br/><p>It’s a test I did using PyGST on February. Now I want to do something like the pic but using GES.<br/><br/></p>
+<pre class="prettyprint prettyprinted" id="python">import sys, os
+import gtk, gobject
+import pygst
+pygst.require("0.10")
+import gst
+
+class Ventana:
+
+	def __init__(self):
+		window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+		window.set_default_size(300, -1)
+		window.set_title("Prueba")
+		window.connect("destroy", gtk.main_quit, "WM destroy")
+		vbox = gtk.VBox()
+		self.button = gtk.Button("On")
+		self.button.connect("clicked", self.on_off)
+		self.label = gtk.Entry()
+		self.label.set_text("Texto")
+		#SPIN DELTA X
+		hbox1 = gtk.HBox()
+		adj1 = gtk.Adjustment(value=0, lower=0, upper=100,
+	step_incr=1, page_incr=1)
+		self.spin_posx_label = gtk.Label("Desplazar en x")
+		self.spin_posx = gtk.SpinButton(adj1, climb_rate=0.0)
+		#SPIN DELTA Y
+		hbox2 = gtk.HBox()
+		adj2 = gtk.Adjustment(value=0, lower=0, upper=100,
+	step_incr=1, page_incr=1)
+		self.spin_posy_label = gtk.Label("Desplazar en y")
+		self.spin_posy = gtk.SpinButton(adj2, climb_rate=0.0)
+		#agregar a las cajas horizontales
+		hbox1.add(self.spin_posx_label)
+		hbox1.add(self.spin_posx)
+		hbox2.add(self.spin_posy_label)
+		hbox2.add(self.spin_posy)		
+		#agregar a la caja vertical
+		vbox.add(self.label)
+		vbox.add(self.button)
+		vbox.add(hbox1)
+		vbox.add(hbox2)
+		window.add(vbox)
+		window.show_all()
+
+	def on_off(self, widget, data=None):
+		if self.button.get_label() == "On":
+
+			self.button.set_label("Off")
+			#GST
+			self.player = gst.Pipeline("player")
+			source = gst.element_factory_make("videotestsrc", "video-source")
+			sink = gst.element_factory_make("xvimagesink", "video-output")
+			caps = gst.Caps("video/x-raw-yuv, width=320, height=230")
+			filter = gst.element_factory_make("capsfilter", "filter")
+			filter.set_property("caps", caps)
+			textoverlay = gst.element_factory_make('textoverlay')
+			textoverlay.set_property("text", self.label.get_text())
+			textoverlay.set_property("font-desc", "normal 60")
+			textoverlay.set_property("deltax", self.spin_posx.get_value_as_int())
+			textoverlay.set_property("deltay", self.spin_posy.get_value_as_int())
+			self.player.add(source, filter, textoverlay, sink)
+			gst.element_link_many(source, filter, textoverlay, sink)
+			self.player.set_state(gst.STATE_PLAYING)
+		else:
+			self.player.set_state(gst.STATE_NULL)				
+			self.button.set_label("On")
+
+Ventana()
+gtk.gdk.threads_init()
+gtk.main()
+</pre>
