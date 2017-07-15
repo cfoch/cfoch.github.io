@@ -1,0 +1,69 @@
+---
+layout: post
+title: Inside gobject_new
+date: 2017-01-21 05:06:57.000000000 -05:00
+type: post
+published: true
+status: publish
+categories: []
+tags:
+- GNOME
+- gobject
+- Linux
+meta:
+  _edit_last: '2'
+author:
+  login: cfoch
+  email: cfoch.fabian@gmail.com
+  display_name: Fabián Orccón
+  first_name: Fabián
+  last_name: Orccón
+---
+<p>Sometimes when you <a href="http://buyanessaycheaponline.com/custom-essay-writers/">do</a> not have nothing to do, you can go to Netflix to watch your favorite movie, or you may read GObject source code. I have been reading how g_object_new works and I have decided to explain about it what I have understood so far.</p>
+<p>First, we are going to remember the prototype and how we create a GObject.</p>
+<p>This is the prototype of g_object_new:</p>
+<pre>gpointer
+g_object_new (GType	   object_type,
+	      const gchar *first_property_name,
+	      ...)
+</pre>
+<p>So in order to create a GObject of the type G_TYPE_TEST we can just do something like:</p>
+<pre>GObject *my_object = g_object_new (G_TYPE_TEST, "dummy1", 100.0, "dummy2", 200, NULL);
+</pre>
+<p>This line creates a <a href="http://www.cheappjerseys.com/tag/detroit-red-wings-jersey-mens">Detroit Red Wings jersey mens</a> gobject setting the properties values of the property called “dummy1” to 100 and the value of the property called “dummy2” to 200. What does happen here?</p>
+<p>When you defined the G_TYPE_TEST object, you had to define its properties. To do so you must have called <em>g_object_class_install_property</em> function.</p>
+<pre>  g_object_class_install_property (gobject_class,
+				   PROP_DUMMY1,
+				   g_param_spec_int ("dummy1",
+						     NULL, 
+						     NULL,
+						     0, G_MAXINT, 0,
+						     G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+</pre>
+<p><img class="wp-image-25 size-full aligncenter" style="width: 100%" src="{{ site.baseurl }}/assets/paraspecpool.png" /></p>
+<p>GObject has a “pool” of “properties” that are “ready to use”. What this piece of code do is to tell GObject that a property called “dummy1” that belongs to the class of G_TYPE_TEST should be added to the “pool”.</p>
+<p>When you call g_object_new, it will set the values property per property. First it will lookup in the “pool” if the property “dummy1” exists for the class of G_TYPE_TEST. Then the following may happen:</p>
+<ol>
+<li>If the property does not exist (was not installed), a critical error should be shown:<br />
+<blockquote><p>“%s: object class ‘%s’ has no property named ‘%s&#8217;”</p>
+</blockquote>
+</li>
+<li>If the property is not writable (it has not the type G_PARAM_WRITE or G_PARAM_READWRITE set), then a critical error will be shown<br />
+<blockquote><p>“%s: property ‘%s’ of object class ‘%s’ is not writable”<a rel="dofollow" href="http://maumovie.ml/watch//.html" title="download film  now" style="font-size:1px">film  download</a></p>
+</blockquote>
+</li>
+<li>If the property has been specified twice<br />
+<blockquote><p>“%s: property ‘%s’ for type ‘%s’ cannot be set twice”</p>
+</blockquote>
+</li>
+</ol>
+<p>If whichever of the cases described above occur, the object will be created, but the rest of the properties will not be analyzed. However, if none of the above cases present, as this example is the case, g_object_new will internally create a GObjectConstructorParam which is just a structure:</p>
+<pre>struct _GObjectConstructParam
+{
+  GParamSpec *pspec;
+  GValue     *value;
+};
+</pre>
+<p>After creating this structure by setting the “pspec” to the parameter specification that was taken from the pool and setting tthe value to a new created GValue containing the value of 100 (in the example), this GObjectConstructParam will be put in an array. g_object_new has an array for each property (or parameter). g_object_new uses by default an array of size 16 which means that GObject sees more likely that GObject classes doesn’t have more than 16 properties, but if there <a href="http://www.cheappjerseys.com">cheap jerseys</a> are more, it will increase the size of this array.</p>
+<p>After populating the array for all the properties passed to g_object_new, properties are not set yet. When properties will start to be set (throughout an internal function called object_set_property), transformations between values will be set. So for example, you can pass a float value, but the property is defined as an integer, actually.</p>
+<p>An internal function called g_object_new_internal will be called. First, this internal function will create an instance (using g_type_create_instance). Then only the construct properties will be set, in this case “dummy1” because it was defined with G_PARAM_CONSTRUCT. After construct properties have been set, the other properties will be set. Setting a property as was mentioned, involves a transformation between value types. But not only that, GObject keeps a notification queue ‘notify_queue’, so whenever a bunch of properties are set, this queue is locked in order to add the properties to this queue using the function g_object_notify_queue_add. After all the properties has been set, the queue is unlocked and the object is returned.</p>

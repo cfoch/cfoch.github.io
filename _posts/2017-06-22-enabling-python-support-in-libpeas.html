@@ -1,0 +1,126 @@
+---
+layout: post
+title: Enabling Python support in Libpeas
+date: 2017-06-22 19:35:37.000000000 -05:00
+type: post
+published: true
+status: publish
+categories: []
+tags:
+- cfoch
+- GNOME
+- interface
+- libpeas
+- Linux
+- pitivi
+- pygobject
+meta:
+  _edit_last: '2'
+author:
+  login: cfoch
+  email: cfoch.fabian@gmail.com
+  display_name: Fabián Orccón
+  first_name: Fabián
+  last_name: Orccón
+---
+<p><a href="https://wiki.gnome.org/Projects/Libpeas">Libpeas</a> has been for a long time one of the most used libraries to implement plugins in GNOME applications. These are applications such as Gedit, GNOME Videos, GNOME Builder and others. Libpeas' README states:</p>
+<blockquote>
+<pre><code>Adding support for libpeas-enabled plugins in your own application is a matter
+of minutes.
+</code></pre>
+</blockquote>
+<p>However this has not been the case in Python because there is a problem. Although, currently it is possible to write Python-based plugins like many applications currently do like Gedit that has its Python Console, it is not possible to implement plugin systems for applications. The source of the problem resides in the Libpeas' function peas_extension_set_newv, that receives an array of GParameter structures. But GParameter is not instropectible! Due to this problem, there was a large discussion in <a href="https://bugzilla.gnome.org/show_bug.cgi?id=709865">bugzilla</a>. After some discussions, Emmanuele Bassi say that GParameter should be deprecated and adding a new function with the following prototype:</p>
+<pre>  gpointer g_object_newv2 (GType gtype,
+                           guint n_properties,
+                           const char *names[],
+                           const GValue values[]);
+</pre>
+<p>Some months ago, I decided to implement Emmanuele Bassi's suggestion and finally the patches were merged in master branch, and the function mentioned about was added but with the name g_object_new_with_properties. After that, the same idea could be implemented in libpeas. I have written a new function called peas_extension_set_new_with_properties and peas_engine_create_with_properties. The patch was proposed before but Garret Regier suggested to do some checking and tests. So the new patch is just pending of review and it means that it will be possible to do the following:</p>
+<pre>extension_set = Peas.ExtensionSet.new_with_properties(engine, Peas.Activatable, ["object"], [a_gobject])
+</pre>
+<p>I have tried this function and it works. I have a very simple example that shows how to use Libpeas in Python with this patch. I think that this function will be really useful to all the GNOME community. I think that the function internally should use g_object_new_with_properties but for the while after talking with Garrett Regier (mantainer of Libpeas), peas_extension_set_with_properties will use GParameter internally for the while.</p>
+<p>You have a very simple example of how to implement a Plugin System using Libpeas in Python in my <a href="https://github.com/cfoch/cfoch-peas">github repository</a>. I hope you can soon have this functionality in master.</p>
+<p>&nbsp;</p>
+<h3><strong>The GInterface problem</strong></h3>
+<p>According Libpeas' README:</p>
+<blockquote>
+<pre><code>One of the most frustrating limitations of the Gedit plugins engine was that it
+only allows extending a single class, called GeditPlugin. With libpeas, this
+limitation vanishes, and the application writer is now able to provide a set of
+GInterfaces the plugin writer will be able to implement as his plugin requires.</code></pre>
+</blockquote>
+<p>The problem is that although PyGObject allows to import interfaces from libraries written in C like <a href="https://lazka.github.io/pgi-docs/Peas-1.0/classes/Activatable.html#Peas.Activatable">Peas.Activatable</a>, it is not possible to <strong>define</strong> new interfaces. So we will be limited to use only Peas.Activatable and thus probably extending the application by accessing directly to the GApplication.</p>
+<p>I have been investigating the problem in PyGObject. I was reading PyGObject's source code and I got an idea of how to solve this problem. I think that the solution is to add a metaclass to GObject.GInterface and as soon as a new interface is going to be <strong>defined</strong>, a new GType and a new <a href="https://developer.gnome.org/gobject/stable/gobject-Type-Information.html">GInterfaceInfo</a> should be registered. However GObject.GInterface is actually written in C. I wasn't sure, to be honest, how to do that in C, but I knew I could get to a solution by investingating. I was investigating and I knew that the solution was to add a metaclass but I couldn't find too much information about that. So I asked in Python IRC channel. According <a href="https://nedbatchelder.com/">Ned Batchelder (nedbat), </a> I was doing "something very very esoteric", but after some discussions I had an idea. I could finally add a metaclass to GObject.GInterface, so I think I am in the right way, but I know it will take time. As this will take a very long time to complete, it does not fall under the scope of my internship. So I will not give too much importance to it after my mentor, the other Pitivi mantainers and I agree to keep it simple. So Pitivi will have only extension sets implementing just Peas.Activatable for the while.</p>
+<h3><strong>The case of</strong> GNOME<strong> Builder</strong></h3>
+<p>I think that a clear example of the use of GInterface to add extension points is GNOME Builder. Gedit is also a good example, but they not have many extension points as GNOME Builder do. I have been reading the source code of GNOME Builder. They define multiple interfaces:</p>
+<pre>[cfoch@localhost gnome-builder]$ find -name *-addin.c  | head -10
+./libide/buildconfig/ide-buildconfig-pipeline-addin.c
+./libide/editor/ide-editor-workbench-addin.c
+./libide/editor/ide-editor-view-addin.c
+./libide/editor/ide-editor-layout-stack-addin.c
+./libide/buildsystem/ide-build-pipeline-addin.c
+<strong>./libide/workbench/ide-workbench-addin.c</strong>
+./libide/workbench/ide-layout-stack-addin.c
+./libide/preferences/ide-preferences-addin.c
+./libide/buildui/ide-build-workbench-addin.c
+./libide/genesis/ide-genesis-addin.c
+
+</pre>
+<p>For example, you can see that IdeWorkbenchAddin defines the following vfuncs:</p>
+<pre>struct _IdeWorkbenchAddinInterface
+{
+  GTypeInterface parent;
+
+  gchar    *(*get_id)          (IdeWorkbenchAddin      *self);
+  void      (*load)            (IdeWorkbenchAddin      *self,
+                                IdeWorkbench           *workbench);
+  void      (*unload)          (IdeWorkbenchAddin      *self,
+                                IdeWorkbench           *workbench);
+  gboolean  (*can_open)        (IdeWorkbenchAddin      *self,
+                                IdeUri                 *uri,
+                                const gchar            *content_type,
+                                gint                   *priority);
+  void      (*open_async)      (IdeWorkbenchAddin      *self,
+                                IdeUri                 *uri,
+                                const gchar            *content_type,
+                                IdeWorkbenchOpenFlags   flags,
+                                GCancellable           *cancellable,
+                                GAsyncReadyCallback     callback,
+                                gpointer                user_data);
+  gboolean  (*open_finish)     (IdeWorkbenchAddin      *self,
+                                GAsyncResult           *result,
+                                GError                **error);
+  void      (*perspective_set) (IdeWorkbenchAddin      *self,
+                                IdePerspective         *perspective);
+};
+</pre>
+<p>Having an interface like this one avoids to expose everything by accessing directly from the main <a href="https://developer.gnome.org/gio/stable/GApplication.html">application</a>. In GNOME Builder, in <strong>libide/workbench/ide-workbench.c</strong> a extension set is created so all extensions implementing this interface can do what they are ordered to do in this file by calling the methods of the <strong>IdeWorkbenchAddinInterface</strong>:</p>
+<pre>  self-&gt;addins = peas_extension_set_new (peas_engine_get_default (),
+                                         IDE_TYPE_WORKBENCH_ADDIN,
+                                         NULL);
+</pre>
+<p>For example, to set the perspective. Different plugins may have different ways to set the perspective.</p>
+<pre>  if (self-&gt;addins != NULL)
+    peas_extension_set_foreach (self-&gt;addins,
+                                ide_workbench_notify_perspective_set,
+                                perspective);
+</pre>
+<p>And the plugins that implement these interfaces doesn't need to know of other types (like the application). They just care about the perspective (and other objects that can be passed as arguments to its virtual functions).</p>
+<pre>static void
+ide_workbench_notify_perspective_set (PeasExtensionSet *set,
+                                      PeasPluginInfo   *plugin_info,
+                                      PeasExtension    *exten,
+                                      gpointer          user_data)
+{
+  IdeWorkbenchAddin *addin = (IdeWorkbenchAddin *)exten;
+  IdePerspective *perspective = user_data;
+
+  g_assert (PEAS_IS_EXTENSION_SET (set));
+  g_assert (plugin_info != NULL);
+  g_assert (IDE_IS_WORKBENCH_ADDIN (addin));
+  g_assert (IDE_IS_PERSPECTIVE (perspective));
+
+  ide_workbench_addin_perspective_set (addin, perspective);
+}
+</pre>
+<p>&nbsp;</p>

@@ -1,0 +1,53 @@
+---
+layout: post
+title: How to stay logged in on IRC forever?
+date: 2017-01-21 19:41:09.000000000 -05:00
+type: post
+published: true
+status: publish
+categories: []
+tags:
+- Linux
+meta:
+  _edit_last: '2'
+author:
+  login: cfoch
+  email: cfoch.fabian@gmail.com
+  display_name: Fabián Orccón
+  first_name: Fabián
+  last_name: Orccón
+---
+<p>You may have different reasons why you want to stay (always) connected to an IRC channel. Maybe you did a question and you are waiting for a response but you have other things to do and you want to shut your notebook down. Or maybe you are the maintainer of a program and you would like to see all the questions your users did during the last 24 hours.</p>
+<p>Firstly, you will need a <strong>cloud service</strong> with Linux. Then you will have to install and set up 'weechat' and 'tmux'.</p>
+<p><strong>Installing Weechat</strong><br />
+Weechat is a text-based IRC client easy-to-use.</p>
+<pre>$ sudo apt-get install weechat</pre>
+<p><strong>Installing tmux</strong><br />
+tmux is a terminal multiplexer that allows you to have multiple terminal sessions to be accessed from a single screen. You can switch between these terminals.</p>
+<pre>$ sudo apt-get install weechat</pre>
+<p>After installing tmux and weechat, start a new tmux session. We will call to this session ircsession.</p>
+<pre>$ tmux new -s ircsession</pre>
+<p><img class="alignnone size-medium wp-image-34" style="width: 100%" src="{{ site.baseurl }}/assets/Screenshot-from-2017-01-21-14-20-45.png" alt="" /></p>
+<p>Then you will open weechat.</p>
+<pre>$ weechat</pre>
+<p><img class="alignnone size-medium wp-image-36" style="width: 100%" src="{{ site.baseurl }}/assets/Screenshot-from-2017-01-21-13-46-16" alt="" /><br />
+In weechat, you can connect to the IRC server and channel you want. For example, let's connect to #gstreamer in irc.freenode.net!</p>
+<pre>/set irc.server.freenode.nicks "your_nickname"
+/connect freenode
+/join #gstreamer
+</pre>
+<p>If you got an error about SASL, do this:</p>
+<pre>/set irc.server.freenode.sasl_username "your_nickname"
+/set irc.server.freenode.sasl_password "xxxxxxx"
+</pre>
+<p>That's it. You can close the terminal window when you want. if you want to see your IRC tmux session again later, type:</p>
+<pre>tmux attach -t ircsession
+</pre>
+<p><strong>TIPS</strong></p>
+<ul>
+<li>"pg up" to scroll up.</li>
+<li>"pg dn" to scroll down.</li>
+<li>"F11" to scroll nicklist up.</li>
+<li>"F12" to scroll nicklist down.</li>
+</ul>
+<p>For more information, you can check the<a href="https://weechat.org/files/doc/devel/weechat_quickstart.en.html"> Weechat quick start guide</a>.</p>
