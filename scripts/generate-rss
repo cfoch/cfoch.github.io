@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+require 'yaml'
+
+TAGS_DIR = 'tags/'
+RSS_DIR = TAGS_DIR + 'rss/'
+
+Dir.glob(TAGS_DIR + "*.html").each do |tag_html_file|
+  tag_basename = File.basename(tag_html_file, ".html")
+
+  puts(RSS_DIR + tag_basename + ".xml")
+  File.open(RSS_DIR + tag_basename + ".xml", "w") do |f|
+    f.write("---\n" +
+            "layout: tag-rss-feed\n" +
+            "tag: " + tag_basename + "\n" +
+            "---\n" +
+            "## Tag\n")
+  end
+end

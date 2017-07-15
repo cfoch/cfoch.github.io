@@ -30,6 +30,7 @@ force-https: True
 
 lang: "en"
 author: "Fabián Orccón"
+name: Fabián Orccón
 title: "{ Fabián Orccón }"
 description: "non-confidential development files."
 keywords: "cfoch, pitivi, gnome, fabian, orccon"
