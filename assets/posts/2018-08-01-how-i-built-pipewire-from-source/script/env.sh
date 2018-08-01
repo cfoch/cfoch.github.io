@@ -1,0 +1,23 @@
+PS1="[pipewire | \w] >: "
+
+PYTHON_BIN=python3
+
+export ENV_PATH=$HOME/env/pipewire
+export PREFIX_PATH=$ENV_PATH
+
+export PATH=$PREFIX_PATH/bin:$PATH
+export LD_LIBRARY_PATH=$PREFIX_PATH/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$PREFIX_PATH/usr/include:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$PREFIX_PATH/lib64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$PREFIX_PATH/usr/local/lib64/:$LD_LIBRARY_PATH
+
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$PREFIX_PATH/lib/pkgconfig
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$PREFIX_PATH/lib64/pkgconfig
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$PREFIX_PATH/usr/local/lib64/pkgconfig
+
+# GStreamer
+export GST_PLUGIN_PATH_1_0=$PREFIX_PATH/usr/local/lib64/gstreamer-1.0/:$GST_PLUGIN_PATH_1_0
+export GST_PLUGIN_PATH_1_0=$PREFIX_PATH/lib64/gstreamer-1.0/:$GST_PLUGIN_PATH_1_0
+
+# Include paths
+export CPLUS_INCLUDE_PATH=$PREFIX_PATH/include
