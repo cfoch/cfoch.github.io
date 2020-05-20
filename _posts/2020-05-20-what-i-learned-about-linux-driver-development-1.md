@@ -104,7 +104,7 @@ In your *.write* virtual function, (wrapped with a mutex) do the following:
 ```
 static ssize_t
 scull_write (struct file * filp, const char __user * buf, size_t count,
-    loff_t * offset)
+    loff_t * f_pos)
 
 	/* ... */
 	
