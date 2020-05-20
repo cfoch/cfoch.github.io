@@ -173,3 +173,6 @@ sass:
 gems:
   - jekyll-paginate
   - jemoji
+
+plugins:
+  - jekyll-gist
