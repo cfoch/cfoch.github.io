@@ -118,3 +118,6 @@ Now the file position is right at the end, writing should happen from there.
 ----
 
 That is all for now. I am not an expert on this area, **yet**.  I plan in the future to continue studying about polling, interruptions, and after that I hope that in the next at most three weeks I can create a simple and stupid mouse driver from scratch. 
+
+
+EDIT: The book mentions about the existance of *udev* but it does not use it in the *scull* example. I have just realized it, and it is on the page 403.
