@@ -2,7 +2,7 @@
 layout: post
 section-type: post
 title: Playing back arbitrary frames with appsrc
-category: Category
+category: tech
 tags: [ 'gnome', 'gstreamer', 'pitivi' ]
 ---
 If you have used GStreamer you may have used source elements like **filesrc** or **v4l2src**. Both of them use an existing source to play back a video, for example, the former takes as an input a video file from the source and the latter takes input from the camera. But, imagine you want to create a video by hand, something like. For example, [videotestsrc](https://github.com/GStreamer/gst-plugins-base/blob/master/gst/videotestsrc/videotestsrc.c), the element that displays a [test (card) pattern](https://en.wikipedia.org/wiki/Test_card), creates this pattern by filling a buffer by hand.
