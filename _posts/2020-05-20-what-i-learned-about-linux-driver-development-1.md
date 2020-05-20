@@ -3,7 +3,7 @@ layout: post
 section-type: post
 title: 'What I learned about Linux device development: Part I'
 category: tech
-tags: [ 'linux', 'gnome', 'linux driver development', 'linux device development' ]
+tags: [ 'linux', 'kernel', 'gnome', 'linux driver development', 'linux device development' ]
 ---
 
 
